@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WineNow - ร้านไวน์ออนไลน์ระดับพรีเมียม</title>
+  <meta name="description" content="WineNow – เลือกซื้อไวน์คุณภาพเยี่ยม ไวน์แดง ไวน์ขาว ไวน์โรเซ่ และสปาร์คกลิ้ง จัดส่งทั่วประเทศไทย" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ANNOUNCEMENT BAR -->
+<div class="announcement-bar">
+  <span>🍷 ส่งฟรีทั่วประเทศ เมื่อซื้อครบ 2,000 บาท</span>
+  <span class="sep">|</span>
+  <span>📦 จัดส่งภายใน 24 ชั่วโมง</span>
+  <span class="sep">|</span>
+  <span>🎁 ห่อของขวัญฟรีทุกออเดอร์</span>
+</div>
+
+<!-- HEADER -->
+<header class="header" id="header">
+  <div class="container header-inner">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="เมนู">
+      <span></span><span></span><span></span>
+    </button>
+
+    <a href="#" class="logo">
+      <span class="logo-icon">🍷</span>
+      <span class="logo-text">Wine<em>Now</em></span>
+    </a>
+
+    <nav class="nav" id="mainNav">
+      <a href="#" class="nav-link active">หน้าแรก</a>
+      <div class="nav-dropdown">
+        <a href="#products" class="nav-link">ไวน์ทั้งหมด <span class="chevron">▾</span></a>
+        <div class="dropdown-menu">
+          <a href="#" data-filter="red" class="dropdown-item">🍷 ไวน์แดง</a>
+          <a href="#" data-filter="white" class="dropdown-item">🥂 ไวน์ขาว</a>
+          <a href="#" data-filter="rose" class="dropdown-item">🌸 ไวน์โรเซ่</a>
+          <a href="#" data-filter="sparkling" class="dropdown-item">✨ สปาร์คกลิ้ง</a>
+        </div>
+      </div>
+      <a href="#" class="nav-link">โปรโมชั่น</a>
+      <a href="#" class="nav-link">บล็อก</a>
+      <a href="#contact" class="nav-link">ติดต่อเรา</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="icon-btn" id="searchBtn" aria-label="ค้นหา">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </button>
+      <button class="icon-btn" aria-label="รายการโปรด">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <button class="icon-btn cart-btn" id="cartBtn" aria-label="ตะกร้า">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        <span class="cart-badge" id="cartBadge">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR -->
+  <div class="search-overlay" id="searchOverlay">
+    <div class="container">
+      <input type="text" class="search-input" id="searchInput" placeholder="ค้นหาไวน์ เช่น Bordeaux, Chardonnay..." />
+      <button class="search-close" id="searchClose">✕</button>
+    </div>
+  </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero">
+  <div class="hero-bg">
+    <img src="images/wine_banner.png" alt="Wine Cellar" class="hero-img" />
+    <div class="hero-overlay"></div>
+  </div>
+  <div class="container hero-content">
+    <p class="hero-eyebrow">ยินดีต้อนรับสู่</p>
+    <h1 class="hero-title">คัดสรรไวน์<br/><em>ระดับพรีเมียม</em><br/>เพื่อคุณโดยเฉพาะ</h1>
+    <p class="hero-sub">ไวน์นำเข้าคุณภาพเยี่ยมจากทั่วโลก จัดส่งถึงบ้านคุณภายใน 24 ชั่วโมง</p>
+    <div class="hero-actions">
+      <a href="#products" class="btn btn-primary">ดูไวน์ทั้งหมด</a>
+      <a href="#" class="btn btn-ghost">เรียนรู้เพิ่มเติม</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><strong>500+</strong><span>รายการไวน์</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat"><strong>50+</strong><span>แบรนด์ชั้นนำ</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat"><strong>10K+</strong><span>ลูกค้าพึงพอใจ</span></div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <span></span>
+  </div>
+</section>
+
+<!-- CATEGORIES STRIP -->
+<section class="categories-strip">
+  <div class="container categories-grid">
+    <a href="#" class="category-card" data-filter="red">
+      <div class="cat-icon">🍷</div>
+      <h3>ไวน์แดง</h3>
+      <p>Red Wine</p>
+    </a>
+    <a href="#" class="category-card" data-filter="white">
+      <div class="cat-icon">🥂</div>
+      <h3>ไวน์ขาว</h3>
+      <p>White Wine</p>
+    </a>
+    <a href="#" class="category-card" data-filter="rose">
+      <div class="cat-icon">🌸</div>
+      <h3>ไวน์โรเซ่</h3>
+      <p>Rosé Wine</p>
+    </a>
+    <a href="#" class="category-card" data-filter="sparkling">
+      <div class="cat-icon">✨</div>
+      <h3>สปาร์คกลิ้ง</h3>
+      <p>Sparkling Wine</p>
+    </a>
+    <a href="#" class="category-card" data-filter="gift">
+      <div class="cat-icon">🎁</div>
+      <h3>ชุดของขวัญ</h3>
+      <p>Gift Sets</p>
+    </a>
+  </div>
+</section>
+
+<!-- FEATURED / PRODUCTS -->
+<section class="products-section" id="products">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">คัดสรรพิเศษ</p>
+      <h2 class="section-title">ไวน์แนะนำ</h2>
+      <p class="section-desc">เลือกสรรจากผู้เชี่ยวชาญไวน์ระดับโลก</p>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" data-filter="all">ทั้งหมด</button>
+      <button class="filter-tab" data-filter="red">ไวน์แดง</button>
+      <button class="filter-tab" data-filter="white">ไวน์ขาว</button>
+      <button class="filter-tab" data-filter="rose">ไวน์โรเซ่</button>
+      <button class="filter-tab" data-filter="sparkling">สปาร์คกลิ้ง</button>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div class="product-grid" id="productGrid"></div>
+
+    <div class="text-center mt-lg">
+      <a href="#" class="btn btn-outline">ดูสินค้าทั้งหมด →</a>
+    </div>
+  </div>
+</section>
+
+<!-- PROMO BANNER -->
+<section class="promo-banner">
+  <div class="container promo-inner">
+    <div class="promo-text">
+      <p class="promo-eyebrow">โปรโมชั่นพิเศษ</p>
+      <h2>ลด 15% สำหรับสมาชิกใหม่</h2>
+      <p>สมัครสมาชิกวันนี้ รับส่วนลดทันที พร้อมรับข่าวสารไวน์ใหม่ก่อนใคร</p>
+      <a href="#newsletter" class="btn btn-primary">สมัครสมาชิกฟรี</a>
+    </div>
+    <div class="promo-image">
+      <img src="images/wine_red.png" alt="Promo Wine" />
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section class="why-us">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">ทำไมต้องเลือก WineNow</p>
+      <h2 class="section-title">มาตรฐานระดับโลก</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">🏆</div>
+        <h3>คัดสรรคุณภาพ</h3>
+        <p>ทุกขวดผ่านการตรวจสอบจากผู้เชี่ยวชาญ และมีใบรับรองความถูกต้อง</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🚚</div>
+        <h3>จัดส่งรวดเร็ว</h3>
+        <p>จัดส่งทั่วประเทศภายใน 24-48 ชั่วโมง ด้วยบรรจุภัณฑ์พิเศษเพื่อรักษาคุณภาพ</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">🌡️</div>
+        <h3>เก็บรักษาอุณหภูมิ</h3>
+        <p>ระบบจัดเก็บอุณหภูมิควบคุมตลอด 24 ชั่วโมง เพื่อคุณภาพไวน์ที่ดีที่สุด</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">💎</div>
+        <h3>ราคายุติธรรม</h3>
+        <p>นำเข้าตรงจากแหล่งผลิต ไม่ผ่านคนกลาง ได้ราคาที่ดีที่สุด</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">รีวิวจากลูกค้า</p>
+      <h2 class="section-title">ลูกค้าพูดถึงเรา</h2>
+    </div>
+    <div class="testimonial-grid">
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"ไวน์คุณภาพดีมาก จัดส่งไวมาก บรรจุภัณฑ์ก็สวยงาม จะกลับมาซื้ออีกแน่นอน"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">K</div>
+          <div><strong>คุณกมลชนก</strong><span>กรุงเทพฯ</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★★</div>
+        <p>"สั่งซื้อเป็นของขวัญวันเกิดเพื่อน ห่อสวยมาก ราคาก็สมเหตุสมผล ประทับใจมากครับ"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">P</div>
+          <div><strong>คุณประสิทธิ์</strong><span>เชียงใหม่</span></div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="stars">★★★★☆</div>
+        <p>"มีไวน์ให้เลือกเยอะมาก เจ้าหน้าที่ให้คำแนะนำดีมาก ช่วยเลือกไวน์ที่เหมาะกับโอกาสได้"</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">S</div>
+          <div><strong>คุณสุพรรษา</strong><span>ภูเก็ต</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter" id="newsletter">
+  <div class="container newsletter-inner">
+    <div class="newsletter-text">
+      <h2>รับข่าวสารและโปรโมชั่นก่อนใคร</h2>
+      <p>สมัครรับจดหมายข่าว รับส่วนลด 15% สำหรับการสั่งซื้อครั้งแรก</p>
+    </div>
+    <form class="newsletter-form" id="newsletterForm">
+      <input type="email" placeholder="กรอกอีเมลของคุณ" required />
+      <button type="submit" class="btn btn-primary">สมัครรับข่าวสาร</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer" id="contact">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <div class="logo">
+        <span class="logo-icon">🍷</span>
+        <span class="logo-text">Wine<em>Now</em></span>
+      </div>
+      <p>ร้านไวน์ออนไลน์ระดับพรีเมียม คัดสรรไวน์คุณภาพจากทั่วโลก จัดส่งถึงบ้านคุณ</p>
+      <div class="social-links">
+        <a href="#" class="social-link" aria-label="Facebook">f</a>
+        <a href="#" class="social-link" aria-label="Instagram">in</a>
+        <a href="#" class="social-link" aria-label="LINE">L</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>หมวดหมู่ไวน์</h4>
+      <ul>
+        <li><a href="#">ไวน์แดง</a></li>
+        <li><a href="#">ไวน์ขาว</a></li>
+        <li><a href="#">ไวน์โรเซ่</a></li>
+        <li><a href="#">สปาร์คกลิ้ง</a></li>
+        <li><a href="#">ชุดของขวัญ</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>บริการลูกค้า</h4>
+      <ul>
+        <li><a href="#">วิธีสั่งซื้อ</a></li>
+        <li><a href="#">ติดตามออเดอร์</a></li>
+        <li><a href="#">นโยบายการคืนสินค้า</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#">ติดต่อเรา</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>ติดต่อเรา</h4>
+      <ul class="contact-list">
+        <li>📞 02-xxx-xxxx</li>
+        <li>📧 hello@winenow.th</li>
+        <li>💬 LINE: @winenow</li>
+        <li>🕐 จ-ศ 9:00–18:00 น.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>© 2024 WineNow. สงวนลิขสิทธิ์ทั้งหมด</p>
+      <div class="payment-icons">
+        <span class="pay-badge">VISA</span>
+        <span class="pay-badge">MC</span>
+        <span class="pay-badge">QR</span>
+        <span class="pay-badge">PromptPay</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- CART SIDEBAR -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-sidebar" id="cartSidebar">
+  <div class="cart-header">
+    <h3>ตะกร้าสินค้า</h3>
+    <button class="cart-close-btn" id="cartCloseBtn">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty">
+      <span>🛒</span>
+      <p>ยังไม่มีสินค้าในตะกร้า</p>
+    </div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-total">
+      <span>รวมทั้งหมด</span>
+      <strong id="cartTotal">฿0</strong>
+    </div>
+    <button class="btn btn-primary full-width">ดำเนินการสั่งซื้อ</button>
+  </div>
+</aside>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>

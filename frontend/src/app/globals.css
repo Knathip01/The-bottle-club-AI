@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: #8b0000;
+  --color-primary-hover: #6b0000;
+  --font-sans: var(--font-inter);
+  --font-serif: var(--font-playfair);
+}
+
+body {
+  background-color: #fafaf9; /* stone-50 */
+  color: #1c1917; /* stone-900 */
+}
