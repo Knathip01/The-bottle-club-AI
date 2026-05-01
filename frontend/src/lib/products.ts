@@ -2,65 +2,96 @@ export type Product = {
   id: number;
   name: string;
   price: number;
+  color?: string;
   stock: number;
+  sub_type?: string;
+  type?: string;
+  countryCode?: string;
+  region?: string;
 };
 
-const PRODUCTS_API_URL = 'https://possimon.onrender.com/products';
-
-function normalizeNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value;
-  }
-
-  const parsed = Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function normalizeProduct(value: unknown): Product | null {
-  if (!value || typeof value !== 'object') {
-    return null;
-  }
-
-  const product = value as Record<string, unknown>;
-  const id = normalizeNumber(product.id);
-  const price = normalizeNumber(product.price);
-  const stock = normalizeNumber(product.stock);
-  const name = typeof product.name === 'string' ? product.name.trim() : '';
-
-  if (id === null || price === null || stock === null || !name) {
-    return null;
-  }
-
-  return {
-    id,
-    name,
-    price,
-    stock,
-  };
-}
-
-export async function getProducts(): Promise<Product[]> {
+/**
+ * Fetches products from the external wine API.
+ * Supports optional filtering by search query.
+ */
+export async function getProducts(query?: string): Promise<Product[]> {
   try {
-    const response = await fetch(PRODUCTS_API_URL, {
-      next: { revalidate: 60 },
+    // Updated API endpoint for wine products
+    const url = 'https://possimon.onrender.com/wines';
+    
+    const response = await fetch(url, {
+      next: { revalidate: 3600 } // Cache for 1 hour
     });
 
     if (!response.ok) {
-      throw new Error(`Products API returned ${response.status}`);
-    }
-
-    const data: unknown = await response.json();
-
-    if (!Array.isArray(data)) {
-      console.error('Products API did not return an array:', data);
+      console.error(`API response error: ${response.status} ${response.statusText}`);
       return [];
     }
 
-    return data
-      .map(normalizeProduct)
-      .filter((product): product is Product => product !== null);
+    const rawData = await response.json();
+
+    // Ensure we always return an array
+    if (!Array.isArray(rawData)) {
+      console.error('API returned non-array data:', rawData);
+      return [];
+    }
+
+    // Map the new API structure to our Product type
+    let products: Product[] = rawData.map((item: any) => {
+      const wineType = item.wine_type || '';
+      let color = 'red'; // default
+      
+      if (wineType.toLowerCase().includes('white') || wineType.toLowerCase().includes('chardonnay') || wineType.toLowerCase().includes('sauvignon blanc')) {
+        color = 'white';
+      } else if (wineType.toLowerCase().includes('rose') || wineType.toLowerCase().includes('rosé')) {
+        color = 'rose';
+      } else if (wineType.toLowerCase().includes('red') || wineType.toLowerCase().includes('cabernet') || wineType.toLowerCase().includes('pinot noir') || wineType.toLowerCase().includes('shiraz') || wineType.toLowerCase().includes('merlot')) {
+        color = 'red';
+      }
+
+      // Simple mapping for country codes if needed by SearchProductList
+      const countryMap: Record<string, string> = {
+        'US': 'us',
+        'France': 'fr',
+        'Italy': 'it',
+        'Spain': 'es',
+        'Australia': 'au',
+        'Chile': 'cl',
+        'Argentina': 'ar',
+        'South Africa': 'za',
+        'Germany': 'de',
+        'Portugal': 'pt',
+        'New Zealand': 'nz',
+        'Thailand': 'th'
+      };
+
+      return {
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        stock: item.stock,
+        color: color,
+        type: item.type || 'wine',
+        sub_type: item.wine_type || 'Classic',
+        region: item.region?.name,
+        countryCode: countryMap[item.country?.name] || item.country?.name?.toLowerCase() || 'fr'
+      };
+    });
+
+    // Filter by query if provided
+    if (query && query.trim() !== '') {
+      const lowerQuery = query.toLowerCase();
+      products = products.filter(p => 
+        (p.name && p.name.toLowerCase().includes(lowerQuery)) || 
+        (p.type && p.type.toLowerCase().includes(lowerQuery)) ||
+        (p.sub_type && p.sub_type.toLowerCase().includes(lowerQuery)) ||
+        (p.region && p.region.toLowerCase().includes(lowerQuery))
+      );
+    }
+
+    return products;
   } catch (error) {
-    console.error('Failed to fetch products from external API:', error);
+    console.error('Failed to fetch products:', error);
     return [];
   }
 }

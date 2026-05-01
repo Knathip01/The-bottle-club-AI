@@ -1,6 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import type { CartItem } from '@/lib/cart';
+import { readCart, subscribeCart } from '@/lib/cart';
 import { User, MapPin, ChevronDown } from 'lucide-react';
 
 interface CheckoutFormProps {
@@ -24,9 +26,8 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
   });
 
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
-  const [orderItems, setOrderItems] = useState<any[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const orderItems = useSyncExternalStore(subscribeCart, readCart, () => [] as CartItem[]);
 
   // Thailand Address States
   const [thailandData, setThailandData] = useState<any[]>([]);
@@ -91,21 +92,6 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
     });
   };
 
-  useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) {
-      try {
-        const parsed = JSON.parse(savedCart);
-        setOrderItems(Array.isArray(parsed) ? parsed : []);
-      } catch (e) {
-        console.error('Failed to parse cart data:', e);
-        localStorage.removeItem('cart');
-        setOrderItems([]);
-      }
-    }
-    setIsLoaded(true);
-  }, []);
-
   const subtotal = orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = Math.round(subtotal * 0.07);
   const total = subtotal;
@@ -118,8 +104,56 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       return;
     }
 
+    if (!formData.province || !formData.district || !formData.subDistrict) {
+      alert('กรุณากรอกที่อยู่จัดส่งให้ครบถ้วน');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // 0. Filter out any invalid items from orderItems (e.g. products with no price)
+      const validItems = orderItems.filter(item => item.price > 0 && item.id);
+      if (validItems.length === 0) {
+        alert('สินค้าในตะกร้าไม่ถูกต้อง (กรุณาลองเลือกสินค้าใหม่อีกครั้ง)');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 1. Save address first to get a valid address_id
+      console.log('Saving address...');
+      const addressResponse = await fetch('/api/proxy/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: Number(user?.id || 1),
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone || '0000000000',
+          address_line: formData.address || 'Default Address',
+          country: formData.country,
+          province: formData.province,
+          district: formData.district,
+          subdistrict: formData.subDistrict,
+          postal_code: formData.zipcode,
+          is_default_shipping: true,
+          is_default_billing: true
+        })
+      });
+
+      if (!addressResponse.ok) {
+        const addrErrorText = await addressResponse.text();
+        console.error('Address save failed:', addrErrorText);
+        throw new Error(`บันทึกที่อยู่ไม่สำเร็จ: ${addrErrorText}`);
+      }
+
+      const addressData = await addressResponse.json();
+      const addressId = addressData.id;
+      console.log('Address saved successfully, ID:', addressId);
+
+      // 2. Create order using the new addressId
+      console.log('Creating order with items:', validItems);
       const response = await fetch('/api/proxy/orders', {
         method: 'POST',
         headers: {
@@ -127,17 +161,20 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         },
         body: JSON.stringify({
           user_id: Number(user?.id || 1),
-          address_id: 1, // Dummy address ID for now
+          address_id: addressId,
           payment_method: paymentMethod,
-          items: orderItems.map(item => ({
+          items: validItems.map(item => ({
             product_id: Number(item.id),
-            quantity: Number(item.quantity)
+            quantity: Number(item.quantity),
+            price: Number(item.price)
           }))
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create order');
+        const orderErrorText = await response.text();
+        console.error('Order creation failed:', orderErrorText);
+        throw new Error(`สร้างคำสั่งซื้อไม่สำเร็จ: ${orderErrorText}`);
       }
 
       localStorage.removeItem('cart');
@@ -150,8 +187,6 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       setIsSubmitting(false);
     }
   };
-
-  if (!isLoaded) return <div className="py-20 text-center">Loading checkout...</div>;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8">
@@ -189,7 +224,9 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
               <input 
                 type="text" 
                 placeholder="หมายเลขโทรศัพท์"
+                value={formData.phone}
                 className="w-full border border-stone-300 p-2.5 text-xs focus:outline-none"
+                onChange={(e) => setFormData({...formData, phone: e.target.value})}
               />
             </div>
           </div>
@@ -207,7 +244,9 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
               <input 
                 type="text" 
                 placeholder="ที่อยู่ LINE 1"
+                value={formData.address}
                 className="w-full border border-stone-300 p-2.5 text-xs focus:outline-none"
+                onChange={(e) => setFormData({...formData, address: e.target.value})}
               />
             </div>
             <div>

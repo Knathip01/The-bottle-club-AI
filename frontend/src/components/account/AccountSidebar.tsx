@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { User, CreditCard, UserCircle, MapPin, ClipboardList, Heart, ShieldCheck, Star, Award, LogOut } from 'lucide-react';
 import { logout } from '@/app/actions/auth';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface AccountSidebarProps {
   user: any;
@@ -10,20 +11,23 @@ interface AccountSidebarProps {
 }
 
 export default function AccountSidebar({ user, activePath = '/account' }: AccountSidebarProps) {
+  const { t } = useLanguage();
+  
   const handleLogout = async () => {
     localStorage.removeItem('cart');
     await logout();
   };
+
   const menuItems = [
-    { name: 'บัญชีผู้ใช้', icon: UserCircle, href: '/account', active: activePath === '/account' },
-    { name: 'ยืนยันการชำระเงิน', icon: CreditCard, href: '#' },
-    { name: 'ข้อมูลส่วนตัว', icon: User, href: '#' },
-    { name: 'สมุดที่อยู่', icon: MapPin, href: '/account/addresses', active: activePath === '/account/addresses' },
-    { name: 'คำสั่งซื้อ', icon: ClipboardList, href: '/account/orders', active: activePath === '/account/orders' },
-    { name: 'รายการโปรดของฉัน', icon: Heart, href: '#' },
-    { name: 'ตั้งค่าความเป็นส่วนตัว', icon: ShieldCheck, href: '#' },
-    { name: 'รีวิวของฉัน', icon: Star, href: '#' },
-    { name: 'คะแนนสะสมของฉัน', icon: Award, href: '#' },
+    { name: t('account.title'), icon: UserCircle, href: '/account', active: activePath === '/account' },
+    { name: t('account.payment_confirm'), icon: CreditCard, href: '#' },
+    { name: t('account.profile'), icon: User, href: '/account/profile', active: activePath === '/account/profile' },
+    { name: t('account.addresses'), icon: MapPin, href: '/account/addresses', active: activePath === '/account/addresses' },
+    { name: t('account.orders'), icon: ClipboardList, href: '/account/orders', active: activePath === '/account/orders' },
+    { name: t('account.favorites'), icon: Heart, href: '#' },
+    { name: t('account.privacy'), icon: ShieldCheck, href: '/account/privacy', active: activePath === '/account/privacy' },
+    { name: t('account.reviews'), icon: Star, href: '/account/reviews', active: activePath === '/account/reviews' },
+    { name: t('account.points'), icon: Award, href: '/account/points', active: activePath === '/account/points' },
   ];
 
   return (
@@ -40,7 +44,7 @@ export default function AccountSidebar({ user, activePath = '/account' }: Accoun
         
         <button className="bg-[#fbbf24] hover:bg-[#f59e0b] transition-colors px-6 py-2 rounded-full text-[11px] font-bold flex items-center gap-2">
           <span className="bg-black/20 p-1 rounded-full"><Award size={12} /></span>
-          คะแนนของคุณ: 0
+          {t('account.your_points')}: 0
         </button>
       </div>
 
@@ -65,7 +69,7 @@ export default function AccountSidebar({ user, activePath = '/account' }: Accoun
           className="w-full flex items-center gap-3 px-6 py-4 text-xs font-medium border-l-4 border-transparent text-stone-500 hover:bg-stone-50 hover:text-red-600 transition-colors"
         >
           <LogOut size={16} />
-          ออกจากระบบ
+          {t('account.logout')}
         </button>
       </nav>
     </div>

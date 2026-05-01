@@ -3,9 +3,9 @@ import MainHeader from '@/components/MainHeader';
 import Footer from '@/components/Footer';
 import AccountSidebar from '@/components/account/AccountSidebar';
 import { getSession } from '@/lib/auth-utils';
-import AddressForm from '@/components/account/AddressForm';
+import ProfileContent from '@/components/account/ProfileContent';
 
-export default async function AddAddressPage() {
+export default async function ProfilePage() {
   const session = await getSession();
   
   if (!session) {
@@ -19,21 +19,9 @@ export default async function AddAddressPage() {
       <MainHeader />
 
       <div className="flex-1 container mx-auto px-4 py-8">
-        {/* Breadcrumb */}
-        <div className="text-[10px] text-stone-500 uppercase tracking-widest mb-8">
-          HOME / MY ACCOUNT
-        </div>
-
         <div className="flex flex-col md:flex-row gap-12">
-          {/* Sidebar */}
-          <AccountSidebar user={user} activePath="/account/addresses" />
-
-          {/* Main Content */}
-          <div className="flex-1">
-            <h1 className="text-xl font-bold mb-10">เพิ่มที่อยู่ใหม่</h1>
-
-            <AddressForm user={user} />
-          </div>
+          <AccountSidebar user={user} activePath="/account/profile" />
+          <ProfileContent user={user} />
         </div>
       </div>
 

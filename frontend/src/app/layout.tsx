@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
   description: "he Bottle Club – เลือกซื้อไวน์คุณภาพเยี่ยม ไวน์แดง ไวน์ขาว ไวน์โรเซ่ และสปาร์คกลิ้ง จัดส่งทั่วประเทศไทย",
 };
 
+import AIChat from "@/components/AIChat";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,7 +30,10 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${playfair.variable} font-sans antialiased bg-stone-50 text-stone-900`}
       >
-        {children}
+        <LanguageProvider>
+          {children}
+          <AIChat />
+        </LanguageProvider>
       </body>
     </html>
   );

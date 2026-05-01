@@ -1,19 +1,21 @@
-import Link from "next/link";
+'use client';
+
 import Image from "next/image";
+import Link from "next/link";
+import { Clock3, Mail, MessageCircle, Phone, Wine } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="bg-gradient-to-b from-stone-950 via-stone-900 to-black text-stone-300 pt-16">
-
-      {/* ================= TOP SECTION ================= */}
       <div className="container mx-auto px-6 lg:px-12 pb-12 border-b border-stone-800">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
-
-          {/* BRAND */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-3 group">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition">
-                🍷
+                <Wine className="h-4 w-4 text-white" />
               </div>
               <span className="text-2xl font-serif font-bold text-white">
                 The Bottle Club
@@ -21,58 +23,64 @@ export default function Footer() {
             </Link>
 
             <p className="text-stone-400 text-sm leading-relaxed">
-              ร้านไวน์และเครื่องดื่มระดับพรีเมียม คัดสรรจากทั่วโลก พร้อมส่งถึงบ้านคุณ
+              {t('footer.brand_desc')}
             </p>
           </div>
 
-          {/* MENU */}
           <div>
             <h4 className="text-white font-semibold mb-5 border-l-2 border-amber-500 pl-3">
-              หมวดหมู่
+              {t('footer.categories')}
             </h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="hover:text-amber-400">ไวน์แดง</Link></li>
-              <li><Link href="#" className="hover:text-amber-400">ไวน์ขาว</Link></li>
-              <li><Link href="#" className="hover:text-amber-400">สปาร์คกลิ้ง</Link></li>
-              <li><Link href="#" className="hover:text-amber-400">ของขวัญ</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.red_wine')}</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.white_wine')}</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.sparkling')}</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.gifts')}</Link></li>
             </ul>
           </div>
 
-          {/* SERVICE */}
           <div>
             <h4 className="text-white font-semibold mb-5 border-l-2 border-amber-500 pl-3">
-              บริการลูกค้า
+              {t('footer.services')}
             </h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="#" className="hover:text-amber-400">วิธีสั่งซื้อ</Link></li>
-              <li><Link href="#" className="hover:text-amber-400">ติดตามสินค้า</Link></li>
-              <li><Link href="#" className="hover:text-amber-400">คืนสินค้า</Link></li>
-              <li><Link href="#" className="hover:text-amber-400">FAQ</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.how_to_order')}</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.tracking')}</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.returns')}</Link></li>
+              <li><Link href="#" className="hover:text-amber-400">{t('footer.faq')}</Link></li>
             </ul>
           </div>
 
-          {/* CONTACT */}
           <div>
             <h4 className="text-white font-semibold mb-5 border-l-2 border-amber-500 pl-3">
-              ติดต่อ
+              {t('footer.contact_title')}
             </h4>
             <ul className="space-y-3 text-sm text-stone-400">
-              <li>📞 02-xxx-xxxx</li>
-              <li>📧 whatsup@thebottle.club</li>
-              <li>💬 LINE: @bottleclub</li>
-              <li>🕐 10:00–21:00 ทุกวัน</li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-pink-400" />
+                <span>093 578 6466</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-stone-300" />
+                <span>whatsup@thebottle.club</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <MessageCircle className="h-4 w-4 text-stone-300" />
+                <span>LINE: @bottleclub</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Clock3 className="h-4 w-4 text-stone-300" />
+                <span>10:00-21:00</span>
+              </li>
             </ul>
           </div>
         </div>
       </div>
 
-      {/* ================= SHIPPING + PAYMENT ================= */}
       <div className="container mx-auto px-6 lg:px-12 py-6 flex flex-col lg:flex-row items-center justify-between gap-6 border-b border-stone-800">
-
-        {/* SHIPPING */}
         <div className="flex items-center gap-4 flex-wrap">
           <span className="text-xs text-stone-500 tracking-widest">
-            DELIVERY BY
+            {t('footer.delivery_by')}
           </span>
 
           <Image
@@ -91,10 +99,9 @@ export default function Footer() {
           />
         </div>
 
-        {/* PAYMENT */}
         <div className="flex items-center gap-4 flex-wrap">
           <span className="text-xs text-stone-500 tracking-widest">
-            PAYMENT
+            {t('footer.payment')}
           </span>
 
           <Image src="/payments/visa.png" alt="visa" width={50} height={20} />
@@ -104,7 +111,6 @@ export default function Footer() {
           <Image src="/payments/promptpay.png" alt="promptpay" width={60} height={20} />
         </div>
       </div>
-
     </footer>
   );
 }

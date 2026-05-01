@@ -1,3 +1,5 @@
+'use server';
+
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
@@ -26,18 +28,29 @@ export async function login(user: any) {
   const session = await encrypt({ user, expires });
 
   // Save the session in a cookie
-  (await cookies()).set('session', session, { expires, httpOnly: true });
+  (await cookies()).set('session', session, { 
+    expires, 
+    httpOnly: true, 
+    path: '/',
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  });
 }
 
 export async function logout() {
   // Destroy the session
-  (await cookies()).set('session', '', { expires: new Date(0) });
+  (await cookies()).set('session', '', { expires: new Date(0), path: '/' });
 }
 
 export async function getSession() {
   const session = (await cookies()).get('session')?.value;
   if (!session) return null;
-  return await decrypt(session);
+  try {
+    return await decrypt(session);
+  } catch (error) {
+    console.error('Session decryption error:', error);
+    return null;
+  }
 }
 
 export async function updateSession(request: NextRequest) {
@@ -45,14 +58,19 @@ export async function updateSession(request: NextRequest) {
   if (!session) return;
 
   // Refresh the session so it doesn't expire
-  const parsed = await decrypt(session);
-  parsed.expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
-  const res = NextResponse.next();
-  res.cookies.set({
-    name: 'session',
-    value: await encrypt(parsed),
-    httpOnly: true,
-    expires: parsed.expires,
-  });
-  return res;
+  try {
+    const parsed = await decrypt(session);
+    parsed.expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    const res = NextResponse.next();
+    res.cookies.set({
+      name: 'session',
+      value: await encrypt(parsed),
+      httpOnly: true,
+      expires: parsed.expires,
+      path: '/',
+    });
+    return res;
+  } catch (error) {
+    return;
+  }
 }
