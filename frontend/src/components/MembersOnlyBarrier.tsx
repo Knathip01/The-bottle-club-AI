@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Lock, Facebook } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 import { loginWithProvider } from '@/lib/auth-client';
 
