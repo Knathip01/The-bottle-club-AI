@@ -11,11 +11,15 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrend
 export async function register(formData: any) {
   const { firstName, lastName, email, phone, username, password } = formData;
 
-  if (!email || !password || !username) {
-    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (อีเมล, ชื่อผู้ใช้ และรหัสผ่าน)' };
+  // Use email as username if not provided (to support email-only login)
+  const effectiveUsername = username || email;
+
+  if (!email || !password) {
+    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (อีเมล และรหัสผ่าน)' };
   }
 
   try {
+    // 1. Try to register with external API
     const response = await fetch(`${API_BASE_URL}/register`, {
       method: 'POST',
       headers: {
@@ -26,7 +30,7 @@ export async function register(formData: any) {
         last_name: lastName,
         email: email,
         phone: phone || '',
-        username: username,
+        username: effectiveUsername,
         password: password
       }),
     });
@@ -39,28 +43,81 @@ export async function register(formData: any) {
       const text = await response.text();
       console.error('Register API Non-JSON Response:', text);
       if (!response.ok) {
-        return { error: `เซิร์ฟเวอร์เกิดข้อผิดพลาด (${response.status}): ${text.slice(0, 50)}` };
+        if (response.status === 409) {
+          return { error: 'อีเมลนี้ถูกใช้งานแล้ว' };
+        }
       }
       data = text;
     }
 
-    if (!response.ok) {
-      console.error('Register API Error Response:', data);
-      let errorMessage = 'การลงทะเบียนไม่สำเร็จ';
-      if (data && typeof data === 'object' && data.detail) {
-        if (Array.isArray(data.detail)) {
-          errorMessage = data.detail[0]?.msg || errorMessage;
-        } else {
-          errorMessage = data.detail;
-        }
+    // 2. Always try to save to local database for fallback
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const existingUser = await query('SELECT id FROM users WHERE email = $1', [email]);
+      
+      if (existingUser.rows.length === 0) {
+        await query(
+          'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4)',
+          [firstName, lastName, email, hashedPassword]
+        );
       }
-      return { error: errorMessage };
+    } catch (dbError) {
+      console.error('Local registration fallback error:', dbError);
     }
 
-    await setAuthSession(data);
+    // 3. Set session
+    if (response.ok && data) {
+      await setAuthSession(data);
+    } else {
+      const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
+      if (userResult.rows.length > 0) {
+        const user = userResult.rows[0];
+        await setAuthSession({
+          id: user.id,
+          username: effectiveUsername,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          is_local: true
+        });
+      } else {
+        return { error: 'การลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' };
+      }
+    }
+    
     revalidatePath('/');
   } catch (error: any) {
     console.error('Registration error:', error);
+    
+    try {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const existingUser = await query('SELECT id FROM users WHERE email = $1', [email]);
+      
+      if (existingUser.rows.length === 0) {
+        await query(
+          'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4)',
+          [firstName, lastName, email, hashedPassword]
+        );
+      }
+      
+      const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
+      if (userResult.rows.length > 0) {
+        const user = userResult.rows[0];
+        await setAuthSession({
+          id: user.id,
+          username: effectiveUsername,
+          email: user.email,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          is_local: true
+        });
+        revalidatePath('/');
+        return redirect('/account');
+      }
+    } catch (dbError) {
+      console.error('Final registration fallback failed:', dbError);
+    }
+    
     return { error: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' };
   }
 
@@ -68,15 +125,15 @@ export async function register(formData: any) {
 }
 
 export async function login(formData: any) {
-  const { username, password } = formData;
+  const { email, password } = formData;
 
-  if (!username || !password) {
-    return { error: 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน' };
+  if (!email || !password) {
+    return { error: 'กรุณากรอกอีเมลและรหัสผ่าน' };
   }
 
   try {
     const url = new URL(`${API_BASE_URL}/login`);
-    url.searchParams.append('username', username);
+    url.searchParams.append('username', email); 
     url.searchParams.append('password', password);
 
     const response = await fetch(url.toString(), {
@@ -92,37 +149,29 @@ export async function login(formData: any) {
       data = await response.json();
     } else {
       const text = await response.text();
-      console.error('Login API Non-JSON Response:', text);
       if (!response.ok) {
-        return { error: `ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (${response.status})` };
+        // Fallback below
+      } else {
+        data = text;
       }
-      data = text;
     }
 
     if (!response.ok) {
-      console.error('Login API Error Response:', data);
-      
-      // FALLBACK: Try local database for "old data" users
       try {
-        console.log('Attempting local database login fallback for:', username);
-        const userResult = await query(
-          'SELECT * FROM users WHERE username = $1 OR email = $1',
-          [username]
-        );
+        const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
 
         if (userResult.rows.length > 0) {
           const user = userResult.rows[0];
           const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
           
           if (isPasswordMatch) {
-            console.log('Local database login successful for:', username);
             const sessionData = {
               id: user.id,
-              username: user.username,
+              username: user.email.split('@')[0],
               email: user.email,
               first_name: user.first_name,
               last_name: user.last_name,
-              is_local: true // Flag to indicate this is a local user
+              is_local: true
             };
             await setAuthSession(sessionData);
             revalidatePath('/');
@@ -130,41 +179,26 @@ export async function login(formData: any) {
           }
         }
       } catch (dbError) {
-        console.error('Local database fallback error:', dbError);
+        console.error('Local login fallback error:', dbError);
       }
 
-      let errorMessage = 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
-      if (data && typeof data === 'object' && data.detail) {
-        if (Array.isArray(data.detail)) {
-          errorMessage = data.detail[0]?.msg || errorMessage;
-        } else {
-          errorMessage = data.detail;
-        }
-      }
-      return { error: errorMessage };
+      return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' };
     }
 
     await setAuthSession(data);
     revalidatePath('/');
   } catch (error: any) {
-    if (error.digest?.startsWith('NEXT_REDIRECT')) throw error; // Allow redirects to work
-    console.error('Login error:', error);
+    if (error.digest?.startsWith('NEXT_REDIRECT')) throw error;
     
-    // Also try local database if API is down
     try {
-      const userResult = await query(
-        'SELECT * FROM users WHERE username = $1 OR email = $1',
-        [username]
-      );
-
+      const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
       if (userResult.rows.length > 0) {
         const user = userResult.rows[0];
         const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
-        
         if (isPasswordMatch) {
           const sessionData = {
             id: user.id,
-            username: user.username,
+            username: user.email.split('@')[0],
             email: user.email,
             first_name: user.first_name,
             last_name: user.last_name,
@@ -176,7 +210,7 @@ export async function login(formData: any) {
         }
       }
     } catch (dbError) {
-      console.error('Local database fallback error during API failure:', dbError);
+      console.error('API Failure fallback failed:', dbError);
     }
     
     return { error: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' };
@@ -190,4 +224,3 @@ export async function logout() {
   revalidatePath('/');
   redirect('/login');
 }
-

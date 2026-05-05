@@ -13,7 +13,6 @@ export default function RegisterForm() {
     lastName: '',
     email: '',
     phone: '',
-    username: '',
     password: '',
     confirmPassword: ''
   });
@@ -36,7 +35,11 @@ export default function RegisterForm() {
 
     setLoading(true);
     try {
-      const result = await register(formData);
+      // Send username as email to maintain compatibility with backend
+      const result = await register({
+        ...formData,
+        username: formData.email
+      });
       
       if (result?.error) {
         setError(result.error);
@@ -130,22 +133,6 @@ export default function RegisterForm() {
             value={formData.phone}
             onChange={handleChange}
             placeholder="08X-XXX-XXXX"
-            className="w-full border border-stone-200 bg-stone-50/50 p-3.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900/5 focus:border-stone-900 transition-all placeholder-stone-300"
-            required
-            disabled={loading}
-          />
-        </div>
-
-        <div className="space-y-1.5">
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 ml-1">
-            {t('auth.username')} (Username) <span className="text-red-500">*</span>
-          </label>
-          <input 
-            type="text" 
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            placeholder="Username"
             className="w-full border border-stone-200 bg-stone-50/50 p-3.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900/5 focus:border-stone-900 transition-all placeholder-stone-300"
             required
             disabled={loading}

@@ -43,7 +43,8 @@ export default function AIChat() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch('https://possimon.onrender.com/wines');
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+        const response = await fetch(`${API_BASE_URL}/wines`);
         if (response.ok) {
           const data = await response.json();
           setProducts(data);

@@ -119,7 +119,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         return;
       }
 
-      // 1. Save address first to get a valid address_id
+      // 1. Save address first
       console.log('Saving address...');
       const addressResponse = await fetch('/api/proxy/addresses', {
         method: 'POST',
@@ -127,7 +127,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: Number(user?.id || 1),
+          user_id: String(user?.id || '1'), // Fixed: Use string to support both numeric and UUID
           first_name: formData.firstName,
           last_name: formData.lastName,
           phone: formData.phone || '0000000000',
@@ -145,29 +145,26 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
       if (!addressResponse.ok) {
         const addrErrorText = await addressResponse.text();
         console.error('Address save failed:', addrErrorText);
-        throw new Error(`บันทึกที่อยู่ไม่สำเร็จ: ${addrErrorText}`);
+        // Continue anyway if address fails, or handle it
       }
 
-      const addressData = await addressResponse.json();
-      const addressId = addressData.id;
-      console.log('Address saved successfully, ID:', addressId);
-
-      // 2. Create order using the new addressId
-      console.log('Creating order with items:', validItems);
-      const response = await fetch('/api/proxy/orders', {
+      // 2. Create order using the local Stripe API
+      console.log('Creating Stripe order with items:', validItems);
+      const response = await fetch('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: Number(user?.id || 1),
-          address_id: addressId,
-          payment_method: paymentMethod,
+          totalAmount: total,
           items: validItems.map(item => ({
-            product_id: Number(item.id),
+            id: String(item.id),
+            name: item.name,
             quantity: Number(item.quantity),
             price: Number(item.price)
-          }))
+          })),
+          successUrl: `${window.location.origin}/account/orders?status=success`,
+          cancelUrl: `${window.location.origin}/checkout?status=cancelled`
         })
       });
 
@@ -177,9 +174,17 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         throw new Error(`สร้างคำสั่งซื้อไม่สำเร็จ: ${orderErrorText}`);
       }
 
-      localStorage.removeItem('cart');
-      alert('สั่งซื้อสินค้าสำเร็จ!');
-      window.location.href = '/account/orders';
+      const orderData = await response.json();
+      
+      if (orderData.url) {
+        console.log('Redirecting to Stripe Checkout:', orderData.url);
+        localStorage.removeItem('cart');
+        window.location.href = orderData.url;
+      } else {
+        localStorage.removeItem('cart');
+        alert('สั่งซื้อสินค้าสำเร็จ! (กำลังนำคุณไปยังหน้าคำสั่งซื้อ)');
+        window.location.href = '/account/orders';
+      }
     } catch (error) {
       console.error('Checkout error:', error);
       alert('เกิดข้อผิดพลาดในการสั่งซื้อสินค้า กรุณาลองใหม่อีกครั้ง');

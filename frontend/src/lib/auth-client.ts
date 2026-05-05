@@ -1,31 +1,18 @@
-import { createClient } from '@/utils/supabase/client';
+'use client';
 
 /**
- * Client-side function to handle social login redirection using Supabase
+ * Client-side authentication utilities
  */
-export async function loginWithProvider(provider: 'facebook' | 'line' | 'google') {
-  const supabase = createClient();
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+
+/**
+ * Redirects the user to the provider's OAuth login page
+ * @param provider - 'facebook', 'line', or 'google'
+ */
+export const loginWithProvider = (provider: string) => {
+  console.log(`Logging in with ${provider}...`);
   
-  // Dynamic origin for callback URL
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const redirectTo = `${origin}/auth/callback`;
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: provider,
-    options: {
-      redirectTo: redirectTo,
-    },
-  });
-
-  if (error) {
-    console.error(`Error logging in with ${provider}:`, error.message);
-    // Fallback to external API if Supabase fails
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
-    window.location.href = `${API_BASE_URL}/login/${provider}`;
-    return;
-  }
-
-  if (data.url) {
-    window.location.href = data.url;
-  }
-}
+  // Use /login/provider for all OAuth providers (facebook, line, google)
+  window.location.href = `${API_BASE_URL}/login/${provider}`;
+};

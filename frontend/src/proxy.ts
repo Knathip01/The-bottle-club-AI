@@ -1,30 +1,15 @@
-import { type NextRequest } from 'next/server'
-import { updateSession as updateSupabaseSession } from '@/utils/supabase/middleware'
+import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession as updateCustomSession } from '@/lib/auth-utils'
 
 export default async function proxy(request: NextRequest) {
-  // 1. Update Supabase Session first
-  const response = await updateSupabaseSession(request)
-  
-  // 2. Update Custom JWT Session
+  // 1. Update Custom JWT Session
   const customResponse = await updateCustomSession(request)
   
   if (customResponse) {
-    // Copy cookies from customResponse to the final response
-    customResponse.cookies.getAll().forEach((cookie) => {
-      response.cookies.set(cookie.name, cookie.value, {
-        path: cookie.path,
-        domain: cookie.domain,
-        maxAge: cookie.maxAge,
-        expires: cookie.expires,
-        sameSite: cookie.sameSite,
-        httpOnly: cookie.httpOnly,
-        secure: cookie.secure,
-      })
-    })
+    return customResponse
   }
   
-  return response
+  return NextResponse.next()
 }
 
 export const config = {

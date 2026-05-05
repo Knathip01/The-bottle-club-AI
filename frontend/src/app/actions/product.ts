@@ -17,8 +17,8 @@ export async function addToCart(productId: string, quantity: number) {
     throw new Error('You must be logged in to add items to cart')
   }
 
-  // NOTE: For now, we are just simulating the cart logic as we've moved 
-  // from Supabase to a custom PostgreSQL database.
+  // NOTE: For now, we are just simulating the cart logic as we've moved
+  // to a custom PostgreSQL database.
   // You would typically insert into a 'cart_items' table in your PostgreSQL DB.
   
   console.log(`Adding product ${productId} to cart for user ${session.user.id}`);

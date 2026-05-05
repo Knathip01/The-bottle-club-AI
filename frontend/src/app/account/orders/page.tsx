@@ -20,7 +20,8 @@ export default async function OrdersPage() {
   // 1. Fetch from Render API
   let apiOrders: any[] = [];
   try {
-    const res = await fetch('https://possimon.onrender.com/orders', {
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+    const res = await fetch(`${API_BASE_URL}/orders`, {
       next: { revalidate: 0 },
     });
     if (res.ok) {

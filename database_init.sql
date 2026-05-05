@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Create orders table (referenced in app/api/create-order/route.ts)
 CREATE TABLE IF NOT EXISTS orders (
     id SERIAL PRIMARY KEY,
-    user_id VARCHAR(255), -- Matching Supabase User ID (UUID string) if using Supabase, but actions use integer SERIAL if custom
+    user_id VARCHAR(255), -- Matching User ID (could be UUID string from external API or integer SERIAL from local)
     total_amount DECIMAL(10, 2) NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
     stripe_payment_intent_id VARCHAR(255),

@@ -8,7 +8,7 @@ import { AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function LoginForm() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export default function LoginForm() {
     setLoading(true);
     
     try {
-      const result = await login({ username, password });
+      const result = await login({ email, password });
       
       if (result?.error) {
         setError(result.error);
@@ -59,13 +59,13 @@ export default function LoginForm() {
         
         <div className="space-y-1.5">
           <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 ml-1">
-            {t('auth.username')} <span className="text-red-500">*</span>
+            {t('auth.email')} <span className="text-red-500">*</span>
           </label>
           <input 
-            type="text" 
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
+            type="email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="email@example.com"
             className="w-full border border-stone-200 bg-stone-50/50 p-3.5 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-stone-900/5 focus:border-stone-900 transition-all placeholder-stone-300"
             required
             disabled={loading}

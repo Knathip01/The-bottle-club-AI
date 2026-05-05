@@ -61,11 +61,11 @@ export default function Header({ user }: HeaderProps) {
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group shrink-0">
               <img
-                src="https://scontent.fcnx3-1.fna.fbcdn.net/v/t39.30808-6/556861286_25169899605941128_4149678781583050450_n.jpg?stp=dst-jpg_p526x296_tt6&_nc_cat=104&ccb=1-7&_nc_sid=1d70fc&_nc_ohc=u56-UTUBzDQQ7kNvwFXulQ0&_nc_oc=Adq6pFbRXd80nWfPyWjNTFPJSH_O2PwFuu9tFAjrKzpg4321TepLzG9Iu8y_O7ZD0XrS7jHOJSxCpAZpGSmaUp-X&_nc_zt=23&_nc_ht=scontent.fcnx3-1.fna&_nc_gid=dCTvkxPhjaK8kXn3i-LQhA&_nc_ss=7b2a8&oh=00_Af2StMlzOvdKzoMiXfCWFGaD_W7ex_pg5xcUqkC65AbvNw&oe=69F40B29"
-                alt="logo"
-                className="h-10 w-10 rounded-full object-cover border border-gray-300"
+                src="/logos/Thebottleclub.jpg"
+                alt="The Bottle Club Logo"
+                className="h-10 w-10 rounded-full object-cover border border-stone-200 shadow-sm group-hover:scale-105 transition-transform duration-300"
               />
-              <span className="text-xl font-bold">The Bottle Club</span>
+              <span className="text-xl font-bold tracking-tight">The Bottle Club</span>
             </Link>
 
             {/* Search Bar */}

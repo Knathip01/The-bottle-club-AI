@@ -16,8 +16,8 @@ export type Product = {
  */
 export async function getProducts(query?: string): Promise<Product[]> {
   try {
-    // Updated API endpoint for wine products
-    const url = 'https://possimon.onrender.com/wines';
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+    const url = `${API_BASE_URL}/wines`;
     
     const response = await fetch(url, {
       next: { revalidate: 3600 } // Cache for 1 hour
