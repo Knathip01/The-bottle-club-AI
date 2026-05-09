@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { addCartItem } from '@/lib/cart';
 import type { Product } from '@/lib/products';
 import { ShoppingCart, Star } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface SearchProductListProps {
   products: Product[];
