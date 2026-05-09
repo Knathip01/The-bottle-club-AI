@@ -117,27 +117,32 @@ export default function LoginForm() {
         <span className="bg-white px-4 text-[10px] font-bold uppercase tracking-widest text-stone-400 relative z-10">{t('auth.or_continue_with')}</span>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <button 
-          onClick={() => loginWithProvider('facebook')}
-          className="flex items-center justify-center bg-[#1877F2] text-white p-3 rounded-lg hover:bg-[#166fe5] transition-all group shadow-sm active:scale-[0.98]"
-        >
-          <div className="w-5 h-5 bg-white text-[#1877F2] flex items-center justify-center rounded-sm font-bold font-serif text-[12px] mr-2">f</div>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Facebook</span>
-        </button>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        {/* LINE - Modern gradient style */}
         <button 
           onClick={() => loginWithProvider('line')}
-          className="flex items-center justify-center bg-[#06C755] text-white p-3 rounded-lg hover:bg-[#05b34c] transition-all group shadow-sm active:scale-[0.98]"
+          className="relative flex items-center justify-center bg-[#06C755]/10 border border-[#06C755]/20 text-[#06C755] p-3 rounded-2xl hover:bg-[#06C755] hover:text-white transition-all duration-500 group overflow-hidden shadow-sm hover:shadow-[#06C755]/20 hover:shadow-xl active:scale-[0.96]"
         >
-          <div className="w-5 h-5 bg-white text-[#06C755] flex items-center justify-center rounded-sm font-bold font-serif text-[12px] mr-2">L</div>
-          <span className="text-[10px] font-bold uppercase tracking-wider">LINE</span>
+          <div className="absolute inset-0 bg-gradient-to-tr from-[#06C755]/0 via-[#06C755]/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+          <div className="w-6 h-6 bg-[#06C755] text-white flex items-center justify-center rounded-xl font-black text-[14px] mr-2 shadow-sm group-hover:bg-white group-hover:text-[#06C755] transition-colors duration-300">L</div>
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] z-10">LINE</span>
         </button>
+
+        {/* Google - Premium minimalist style */}
         <button 
           onClick={() => loginWithProvider('google')}
-          className="flex items-center justify-center bg-white border border-stone-200 text-stone-600 p-3 rounded-lg hover:bg-stone-50 transition-all group shadow-sm active:scale-[0.98]"
+          className="relative flex items-center justify-center bg-white border border-stone-200 text-stone-600 p-3 rounded-2xl hover:border-stone-400 hover:text-stone-900 transition-all duration-500 group overflow-hidden shadow-sm hover:shadow-stone-200/50 hover:shadow-xl active:scale-[0.96]"
         >
-          <div className="w-5 h-5 bg-[#EA4335] text-white flex items-center justify-center rounded-sm font-bold font-serif text-[12px] mr-2">G</div>
-          <span className="text-[10px] font-bold uppercase tracking-wider">Google</span>
+          <div className="absolute inset-0 bg-gradient-to-tr from-stone-100/0 via-stone-100/0 to-stone-500/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+          <div className="w-6 h-6 flex items-center justify-center mr-2 group-hover:scale-110 transition-transform duration-500">
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+              <path d="M3.964 10.712c-.18-.54-.282-1.117-.282-1.712s.102-1.173.282-1.712V4.956H.957a9.023 9.023 0 000 8.088l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.582C13.463.891 11.426 0 9 0 5.482 0 2.443 2.017.957 4.956L3.964 7.29c.708-2.127 2.692-3.71 5.036-3.71z" fill="#EA4335"/>
+            </svg>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] z-10">Google</span>
         </button>
       </div>
     </div>

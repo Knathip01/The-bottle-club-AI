@@ -10,6 +10,7 @@ interface SearchProductListProps {
 }
 
 export default function SearchProductList({ products }: SearchProductListProps) {
+  const { t } = useLanguage();
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
   const getMockRating = (id: number) => {
@@ -27,21 +28,7 @@ export default function SearchProductList({ products }: SearchProductListProps) 
   };
 
   const getCountryName = (code?: string) => {
-    const names: Record<string, string> = {
-      fr: 'France',
-      it: 'Italy',
-      es: 'Spain',
-      de: 'Germany',
-      us: 'USA',
-      au: 'Australia',
-      cl: 'Chile',
-      ar: 'Argentina',
-      za: 'South Africa',
-      pt: 'Portugal',
-      nz: 'New Zealand',
-      th: 'Thailand',
-    };
-    return code ? names[code.toLowerCase()] || code.toUpperCase() : 'Unknown';
+    return code?.toUpperCase() || '...';
   };
 
   const handleSelectProduct = (product: Product) => {
@@ -106,7 +93,7 @@ export default function SearchProductList({ products }: SearchProductListProps) 
             <div className="flex flex-1 flex-col justify-center">
               <div className="mb-2">
                 <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                  {product.type || 'Wine'} - {product.sub_type || 'Classic'}
+                  {product.type || t('search.wine_type')} - {product.sub_type || t('products.classic')}
                 </span>
               </div>
               <h2
@@ -145,7 +132,7 @@ export default function SearchProductList({ products }: SearchProductListProps) 
                       ))}
                     </div>
                     <span className="text-[10px] font-bold uppercase tracking-tighter text-stone-400">
-                      ({reviews} ratings)
+                      ({reviews} {t('search.ratings')})
                     </span>
                   </div>
                 </div>
@@ -154,7 +141,7 @@ export default function SearchProductList({ products }: SearchProductListProps) 
               <div className="w-full">
                 <div className="mb-2 text-center md:text-right">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-stone-400">
-                    Average price
+                    {t('search.avg_price')}
                   </span>
                 </div>
                 <button
@@ -163,7 +150,7 @@ export default function SearchProductList({ products }: SearchProductListProps) 
                   disabled={loadingId === product.id}
                 >
                   {loadingId === product.id ? (
-                    <span className="animate-pulse">Loading...</span>
+                    <span className="animate-pulse">{t('search.loading')}</span>
                   ) : (
                     <>
                       <ShoppingCart size={18} />

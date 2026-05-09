@@ -1,69 +1,127 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/context/LanguageContext';
+import { ArrowRight, Clock3, ShieldCheck, Sparkles } from 'lucide-react';
 
 export default function Hero() {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+
+  const copy = {
+    welcome: t('hero.welcome'),
+    title: t('hero.title'),
+    subtitle: t('hero.subtitle'),
+    primary: t('hero.cta_all'),
+    secondary: t('hero.cta_more'),
+  };
+
+  const serviceBadges = [
+    { label: t('hero.service.delivery'), icon: Clock3 },
+    { label: t('hero.service.curated'), icon: Sparkles },
+    { label: t('hero.service.secure'), icon: ShieldCheck },
+  ];
 
   return (
-    <section className="relative h-[80vh] min-h-[600px] flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
+    <section className="relative isolate min-h-[calc(100svh-4rem)] overflow-hidden bg-stone-950 text-white sm:min-h-[760px]">
       <div className="absolute inset-0 z-0">
-        <img 
-          src="/images/wine_banner.png" 
-          alt="Wine Cellar" 
-          className="w-full h-full object-cover object-center"
+        <Image
+          src="/images/wine_banner.png"
+          alt="The Bottle Club wine selection"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-[58%_center]"
         />
-        <div className="absolute inset-0 bg-stone-900/60 mix-blend-multiply" />
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(12,10,9,.62),rgba(12,10,9,.38)_42%,rgba(12,10,9,.86))]" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-stone-50 to-transparent" />
       </div>
 
-      {/* Content */}
-      <div className="container relative z-10 mx-auto px-4 text-center text-white">
-        <p className="text-primary-300 font-medium tracking-widest uppercase mb-4 opacity-90">
-          {t('hero.welcome')}
-        </p>
-        <h1 className="text-5xl md:text-7xl font-serif font-bold mb-6 leading-tight drop-shadow-lg max-w-4xl mx-auto whitespace-pre-line">
-          {t('hero.title')}
-        </h1>
-        <p className="text-lg md:text-xl text-stone-200 mb-10 max-w-2xl mx-auto font-light leading-relaxed">
-          {t('hero.subtitle')}
-        </p>
-        
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Link 
-            href="#products" 
-            className="px-8 py-4 bg-primary hover:bg-primary-hover text-white rounded-none font-medium transition-all hover:-translate-y-1 w-full sm:w-auto"
-          >
-            {t('hero.cta_all')}
-          </Link>
-          <Link 
-            href="#" 
-            className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white border border-white/30 rounded-none font-medium transition-all w-full sm:w-auto"
-          >
-            {t('hero.cta_more')}
-          </Link>
+      <div className="container relative z-10 mx-auto flex min-h-[calc(100svh-4rem)] flex-col justify-end px-4 pb-8 pt-28 sm:min-h-[760px] sm:px-6 sm:pb-14 lg:px-12">
+        <div className="max-w-4xl">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/18 bg-white/10 px-3 py-2 text-[11px] font-bold uppercase tracking-[0.22em] text-white/85 shadow-2xl backdrop-blur-md">
+            <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,.85)]" />
+            {copy.welcome}
+          </div>
+
+          <h1 className="max-w-[12ch] text-5xl font-black leading-[0.95] tracking-normal text-white drop-shadow-2xl sm:text-7xl lg:text-8xl">
+            {copy.title}
+          </h1>
+
+          <p className="mt-5 max-w-xl text-base leading-7 text-stone-100 sm:text-xl sm:leading-8">
+            {copy.subtitle}
+          </p>
+
+          <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
+            <Link
+              href="#products"
+              className="inline-flex min-h-14 items-center justify-center gap-3 rounded-full bg-white px-6 py-4 text-sm font-extrabold text-stone-950 shadow-2xl shadow-black/20 transition hover:-translate-y-0.5 hover:bg-stone-100 active:scale-[0.98]"
+            >
+              {copy.primary}
+              <ArrowRight className="h-4 w-4" strokeWidth={2.8} />
+            </Link>
+            <Link
+              href="#wine-categories"
+              className="inline-flex min-h-14 items-center justify-center rounded-full border border-white/25 bg-white/10 px-6 py-4 text-sm font-extrabold text-white backdrop-blur-md transition hover:-translate-y-0.5 hover:bg-white/18 active:scale-[0.98]"
+            >
+              {copy.secondary}
+            </Link>
+          </div>
         </div>
 
-        {/* Stats */}
-        <div className="mt-16 flex items-center justify-center gap-8 md:gap-16 border-t border-white/20 pt-8 max-w-3xl mx-auto">
-          <div className="text-center">
-            <strong className="block text-3xl md:text-4xl font-serif font-bold mb-1">500+</strong>
-            <span className="text-sm text-stone-300 font-light uppercase tracking-wider">{t('hero.stats.items')}</span>
+        <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-3 lg:max-w-3xl">
+          {serviceBadges.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <div
+                key={item.label}
+                className="flex items-center gap-3 rounded-2xl border border-white/12 bg-white/10 px-4 py-3 text-sm font-semibold text-white/90 backdrop-blur-xl"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-stone-950">
+                  <Icon className="h-4 w-4" strokeWidth={2.5} />
+                </span>
+                <span>{item.label}</span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-6 grid grid-cols-3 overflow-hidden rounded-3xl border border-white/12 bg-stone-950/30 text-center backdrop-blur-xl sm:max-w-xl">
+          <div className="p-4">
+            <strong className="block text-2xl font-black sm:text-3xl">500+</strong>
+            <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.16em] text-stone-300">
+              {t('hero.stats.items')}
+            </span>
           </div>
-          <div className="w-px h-12 bg-white/20" />
-          <div className="text-center">
-            <strong className="block text-3xl md:text-4xl font-serif font-bold mb-1">50+</strong>
-            <span className="text-sm text-stone-300 font-light uppercase tracking-wider">{t('hero.stats.brands')}</span>
+          <div className="border-x border-white/12 p-4">
+            <strong className="block text-2xl font-black sm:text-3xl">50+</strong>
+            <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.16em] text-stone-300">
+              {t('hero.stats.brands')}
+            </span>
           </div>
-          <div className="w-px h-12 bg-white/20" />
-          <div className="text-center">
-            <strong className="block text-3xl md:text-4xl font-serif font-bold mb-1">10K+</strong>
-            <span className="text-sm text-stone-300 font-light uppercase tracking-wider">{t('hero.stats.customers')}</span>
+          <div className="p-4">
+            <strong className="block text-2xl font-black sm:text-3xl">10K+</strong>
+            <span className="mt-1 block text-[10px] font-bold uppercase tracking-[0.16em] text-stone-300">
+              {t('hero.stats.customers')}
+            </span>
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute bottom-4 right-4 hidden w-[min(34vw,360px)] lg:block">
+          <div className="relative aspect-[3/4]">
+            <Image
+              src="/images/wine_hero.png"
+              alt=""
+              fill
+              sizes="360px"
+              className="object-contain drop-shadow-[0_32px_55px_rgba(0,0,0,.55)]"
+            />
           </div>
         </div>
       </div>
+
+      <div className="absolute inset-x-0 bottom-0 z-20 h-px bg-white/10" />
     </section>
   );
 }

@@ -14,8 +14,8 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "The Bottle Club - ร้านไวน์ออนไลน์ระดับพรีเมียม",
-  description: "he Bottle Club – เลือกซื้อไวน์คุณภาพเยี่ยม ไวน์แดง ไวน์ขาว ไวน์โรเซ่ และสปาร์คกลิ้ง จัดส่งทั่วประเทศไทย",
+  title: "The Bottle Club - Premium Wine Delivery",
+  description: "Shop curated red, white, rose, and sparkling wines from The Bottle Club with a modern member experience.",
 };
 
 import AIChat from "@/components/AIChat";
