@@ -24,7 +24,7 @@ export default function LoginForm() {
     try {
       const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
       
-      const response = await fetch(`${API_BASE_URL}/api/auth/login/web`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
