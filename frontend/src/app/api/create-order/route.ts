@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { items, totalAmount, successUrl, cancelUrl } = body;
+    const { items, totalAmount, addressId, successUrl, cancelUrl } = body;
 
     if (!items || !items.length) {
       return NextResponse.json({ error: 'Missing items' }, { status: 400 });
@@ -45,25 +45,70 @@ export async function POST(request: Request) {
       },
     });
 
-    // 3. Save Order to Database (Pending Status)
-    const { query } = await import('@/lib/db');
-
+    // 3. Save Order to External API (Pending Status)
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+    const token = session?.user?.access_token;
+    
     try {
-      const orderResult = await query(
-        'INSERT INTO orders (user_id, total_amount, status, stripe_payment_intent_id) VALUES ($1, $2, $3, $4) RETURNING id',
-        [String(user.id), totalAmount, 'pending', session_stripe.id]
-      );
+      console.log('Sending order to external API:', `${API_BASE_URL}/api/orders`);
+      
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      };
 
-      const order = orderResult.rows[0];
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      // Payload matching OrderCreate schema
+      const orderPayload = {
+        user_id: user.id,
+        total_amount: totalAmount,
+        payment_method: 'credit_card', // Must be one of: cash, promptpay, qr, credit_card, transfer
+        order_type: 'online',
+        address_id: addressId ? parseInt(addressId) : null,
+        items: items.map((item: any) => ({
+          product_id: parseInt(item.id),
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+
+      const apiResponse = await fetch(`${API_BASE_URL}/api/orders`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(orderPayload),
+      });
+
+      if (!apiResponse.ok) {
+        const errorText = await apiResponse.text();
+        console.error('External API Order Error:', errorText);
+      }
+
+      const apiData = await apiResponse.json().catch(() => ({}));
+      const orderId = apiData.id || Date.now(); 
 
       // 4. Return Checkout URL
       return NextResponse.json({
         url: session_stripe.url,
-        orderId: order.id
+        orderId: orderId
       });
-    } catch (dbError) {
-      console.error('Database Error:', dbError);
-      return NextResponse.json({ error: 'Failed to create order in database' }, { status: 500 });
+    } catch (apiError) {
+      console.error('External API Exception:', apiError);
+      // Final fallback to local DB
+      try {
+        const { query } = await import('@/lib/db');
+        const orderResult = await query(
+          'INSERT INTO orders (user_id, total_amount, status, stripe_payment_intent_id) VALUES ($1, $2, $3, $4) RETURNING id',
+          [String(user.id), totalAmount, 'pending', session_stripe.id]
+        );
+        return NextResponse.json({
+          url: session_stripe.url,
+          orderId: orderResult.rows[0].id
+        });
+      } catch (dbError) {
+        return NextResponse.json({ error: 'Failed to create order' }, { status: 500 });
+      }
     }
 
   } catch (error) {

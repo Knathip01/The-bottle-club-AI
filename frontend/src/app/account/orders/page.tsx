@@ -21,25 +21,36 @@ export default async function OrdersPage() {
   let apiOrders: any[] = [];
   try {
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
-    const res = await fetch(`${API_BASE_URL}/orders`, {
+    const token = session?.user?.access_token;
+    
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE_URL}/api/orders`, {
+      headers,
       next: { revalidate: 0 },
     });
+    
     if (res.ok) {
       const allOrders = await res.json();
       if (Array.isArray(allOrders)) {
-        apiOrders = allOrders.filter((order: any) => {
-          const orderUserId = String(order.user_id);
-          const sessionUserId = String(user.id || user.user_id || '');
-          
-          return (orderUserId === sessionUserId && sessionUserId !== '') || orderUserId === '1';
-        });
+        apiOrders = allOrders.map((order: any) => ({
+          ...order,
+          // Handle schema: OrderOut might have total_price
+          total_price: order.total_price || order.total_amount || 0,
+          payment_method: order.payment_method || 'API'
+        }));
       }
+    } else {
+      console.error('API response not OK:', res.status);
     }
   } catch (error) {
     console.error('Failed to fetch orders from API:', error);
   }
 
-  // 2. Fetch from Local Database
+  // 2. Fetch from Local Database (Fallback/Historical)
   let localOrders: any[] = [];
   try {
     const userId = user.id || user.user_id;
@@ -56,7 +67,11 @@ export default async function OrdersPage() {
     console.error('Failed to fetch orders from local DB:', error);
   }
 
-  orders = [...apiOrders, ...localOrders];
+  // Combine and remove duplicates (by ID if both sources have the same order)
+  const combined = [...apiOrders, ...localOrders];
+  const uniqueOrders = Array.from(new Map(combined.map(item => [item.id, item])).values());
+  
+  orders = uniqueOrders;
   orders.sort((a: any, b: any) => {
     const dateA = new Date(a.created_at).getTime();
     const dateB = new Date(b.created_at).getTime();

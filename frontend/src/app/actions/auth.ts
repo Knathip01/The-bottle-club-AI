@@ -11,7 +11,6 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrend
 export async function register(formData: any) {
   const { firstName, lastName, email, phone, username, password } = formData;
 
-  // Use email as username if not provided (to support email-only login)
   const effectiveUsername = username || email;
 
   if (!email || !password) {
@@ -19,8 +18,7 @@ export async function register(formData: any) {
   }
 
   try {
-    // 1. Try to register with external API
-    const response = await fetch(`${API_BASE_URL}/register`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -42,82 +40,21 @@ export async function register(formData: any) {
     } else {
       const text = await response.text();
       console.error('Register API Non-JSON Response:', text);
-      if (!response.ok) {
-        if (response.status === 409) {
-          return { error: 'อีเมลนี้ถูกใช้งานแล้ว' };
-        }
-      }
-      data = text;
+      return { error: 'การลงทะเบียนไม่สำเร็จ: เซิร์ฟเวอร์ส่งการตอบกลับที่ไม่ถูกต้อง' };
     }
 
-    // 2. Always try to save to local database for fallback
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const existingUser = await query('SELECT id FROM users WHERE email = $1', [email]);
-      
-      if (existingUser.rows.length === 0) {
-        await query(
-          'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4)',
-          [firstName, lastName, email, hashedPassword]
-        );
+    if (!response.ok) {
+      if (response.status === 409) {
+        return { error: 'อีเมลนี้หรือชื่อผู้ใช้นี้ถูกใช้งานแล้ว' };
       }
-    } catch (dbError) {
-      console.error('Local registration fallback error:', dbError);
+      return { error: data.detail || data.message || 'การลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' };
     }
 
-    // 3. Set session
-    if (response.ok && data) {
-      await setAuthSession(data);
-    } else {
-      const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
-      if (userResult.rows.length > 0) {
-        const user = userResult.rows[0];
-        await setAuthSession({
-          id: user.id,
-          username: effectiveUsername,
-          email: user.email,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          is_local: true
-        });
-      } else {
-        return { error: 'การลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' };
-      }
-    }
-    
+    // After successful registration, login the user
+    await setAuthSession(data);
     revalidatePath('/');
   } catch (error: any) {
     console.error('Registration error:', error);
-    
-    try {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const existingUser = await query('SELECT id FROM users WHERE email = $1', [email]);
-      
-      if (existingUser.rows.length === 0) {
-        await query(
-          'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4)',
-          [firstName, lastName, email, hashedPassword]
-        );
-      }
-      
-      const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
-      if (userResult.rows.length > 0) {
-        const user = userResult.rows[0];
-        await setAuthSession({
-          id: user.id,
-          username: effectiveUsername,
-          email: user.email,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          is_local: true
-        });
-        revalidatePath('/');
-        return redirect('/account');
-      }
-    } catch (dbError) {
-      console.error('Final registration fallback failed:', dbError);
-    }
-    
     return { error: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' };
   }
 
@@ -132,15 +69,16 @@ export async function login(formData: any) {
   }
 
   try {
-    const url = new URL(`${API_BASE_URL}/login`);
-    url.searchParams.append('username', email); 
-    url.searchParams.append('password', password);
-
-    const response = await fetch(url.toString(), {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login/web`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
+      body: JSON.stringify({
+        username: email,
+        password: password
+      }),
     });
 
     let data;
@@ -149,74 +87,53 @@ export async function login(formData: any) {
       data = await response.json();
     } else {
       const text = await response.text();
-      if (!response.ok) {
-        // Fallback below
-      } else {
-        data = text;
-      }
+      console.error('Login API Non-JSON Response:', text);
+      return { error: 'เข้าสู่ระบบไม่สำเร็จ: เซิร์ฟเวอร์ส่งการตอบกลับที่ไม่ถูกต้อง' };
     }
 
     if (!response.ok) {
-      try {
-        const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
-
-        if (userResult.rows.length > 0) {
-          const user = userResult.rows[0];
-          const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
-          
-          if (isPasswordMatch) {
-            const sessionData = {
-              id: user.id,
-              username: user.email.split('@')[0],
-              email: user.email,
-              first_name: user.first_name,
-              last_name: user.last_name,
-              is_local: true
-            };
-            await setAuthSession(sessionData);
-            revalidatePath('/');
-            return redirect('/account');
-          }
-        }
-      } catch (dbError) {
-        console.error('Local login fallback error:', dbError);
-      }
-
-      return { error: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' };
+      return { error: data.detail || data.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' };
     }
 
     await setAuthSession(data);
     revalidatePath('/');
   } catch (error: any) {
     if (error.digest?.startsWith('NEXT_REDIRECT')) throw error;
-    
-    try {
-      const userResult = await query('SELECT * FROM users WHERE email = $1', [email]);
-      if (userResult.rows.length > 0) {
-        const user = userResult.rows[0];
-        const isPasswordMatch = await bcrypt.compare(password, user.password_hash);
-        if (isPasswordMatch) {
-          const sessionData = {
-            id: user.id,
-            username: user.email.split('@')[0],
-            email: user.email,
-            first_name: user.first_name,
-            last_name: user.last_name,
-            is_local: true
-          };
-          await setAuthSession(sessionData);
-          revalidatePath('/');
-          return redirect('/account');
-        }
-      }
-    } catch (dbError) {
-      console.error('API Failure fallback failed:', dbError);
-    }
-    
+    console.error('Login error:', error);
     return { error: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' };
   }
 
   redirect('/account');
+}
+
+export async function setSessionFromToken(token: string) {
+  try {
+    // 1. Decode the token payload (it's a base64 encoded JSON)
+    const parts = token.split('.');
+    if (parts.length < 2) return { error: 'Invalid token format' };
+    
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(Buffer.from(base64, 'base64').toString());
+    
+    // 2. Extract user info from payload
+    // Adjust based on typical JWT structures (id/sub, username/name, email)
+    const user = {
+      id: payload.id || payload.sub || 0,
+      username: payload.username || payload.name || payload.email?.split('@')[0] || 'User',
+      email: payload.email || '',
+      first_name: payload.first_name || payload.name?.split(' ')[0] || '',
+      last_name: payload.last_name || payload.name?.split(' ')[1] || '',
+      access_token: token // Keep the token for future API calls
+    };
+
+    // 3. Create our own session cookie for Next.js
+    await setAuthSession(user);
+    
+    return { success: true, user };
+  } catch (error) {
+    console.error('Error in setSessionFromToken:', error);
+    return { error: 'Failed to process token' };
+  }
 }
 
 export async function logout() {

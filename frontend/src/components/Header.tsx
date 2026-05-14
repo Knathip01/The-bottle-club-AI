@@ -52,6 +52,7 @@ export default function Header({ user }: HeaderProps) {
 
   const handleLogout = async () => {
     localStorage.removeItem('cart');
+    localStorage.removeItem('access_token');
     await logout();
   };
 
@@ -269,7 +270,7 @@ export default function Header({ user }: HeaderProps) {
                 <div className="p-3 bg-white rounded-2xl shadow-md group-active:shadow-none transition-all">
                   <Wine size={24} strokeWidth={2.5} className="text-[#a11a1a]" />
                 </div>
-                  <span className="text-sm font-black uppercase tracking-[0.18em] text-stone-700">Wines</span>
+                  <span className="text-sm font-black uppercase tracking-[0.18em] text-stone-700">{t('nav.wines')}</span>
               </div>
               <ChevronDown size={20} strokeWidth={3} className="-rotate-90 text-stone-200" />
             </Link>
@@ -279,7 +280,7 @@ export default function Header({ user }: HeaderProps) {
                 <div className="p-3 bg-white rounded-2xl shadow-md group-active:shadow-none transition-all">
                   <Sparkles size={24} strokeWidth={2.5} className="text-[#a11a1a]" />
                 </div>
-                <span className="text-sm font-black uppercase tracking-[0.18em] text-stone-700">{language === 'th' ? 'แนะนำ' : t('nav.recommended')}</span>
+                <span className="text-sm font-black uppercase tracking-[0.18em] text-stone-700">{t('nav.recommended')}</span>
               </div>
               <ChevronDown size={20} strokeWidth={3} className="-rotate-90 text-stone-200" />
             </Link>

@@ -6,7 +6,9 @@ import { revalidatePath } from 'next/cache'
 
 // Fetch products from external API
 export async function getProducts() {
-  return await fetchExternalProducts()
+  const session = await getSession()
+  const token = session?.user?.access_token
+  return await fetchExternalProducts(undefined, token)
 }
 
 // Example: Server Action to add a product to cart

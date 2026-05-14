@@ -15,6 +15,7 @@ export default function AccountSidebar({ user, activePath = '/account' }: Accoun
   
   const handleLogout = async () => {
     localStorage.removeItem('cart');
+    localStorage.removeItem('access_token');
     await logout();
   };
 

@@ -127,22 +127,23 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: String(user?.id || '1'), // Fixed: Use string to support both numeric and UUID
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          phone: formData.phone || '0000000000',
           address_line: formData.address || 'Default Address',
-          country: formData.country,
-          province: formData.province,
-          district: formData.district,
           subdistrict: formData.subDistrict,
+          district: formData.district,
+          province: formData.province,
           postal_code: formData.zipcode,
-          is_default_shipping: true,
-          is_default_billing: true
+          country: formData.country || 'Thailand'
         })
       });
 
-      if (!addressResponse.ok) {
+      let addressId = 1; // Default
+      if (addressResponse.ok) {
+        const addrData = await addressResponse.json().catch(() => ({}));
+        if (addrData && addrData.id) {
+          addressId = addrData.id;
+          console.log('Address saved successfully, ID:', addressId);
+        }
+      } else {
         const addrErrorText = await addressResponse.text();
         console.error('Address save failed:', addrErrorText);
         // Continue anyway if address fails, or handle it
@@ -157,6 +158,7 @@ export default function CheckoutForm({ user }: CheckoutFormProps) {
         },
         body: JSON.stringify({
           totalAmount: total,
+          addressId: addressId,
           items: validItems.map(item => ({
             id: String(item.id),
             name: item.name,

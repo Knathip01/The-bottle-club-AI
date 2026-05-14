@@ -208,7 +208,7 @@ export default function AddressForm({ user }: AddressFormProps) {
           <label className="block text-[11px] font-bold text-stone-900 mb-2">{t('account.country')} *</label>
           <div className="relative">
             <select className="w-full border border-stone-200 p-3 text-xs focus:outline-none bg-white appearance-none transition-colors">
-              <option>ไทย</option>
+              <option>{t('account.country_thailand')}</option>
             </select>
             <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
           </div>

@@ -1,19 +1,30 @@
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth-utils';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const session = await getSession();
+    const token = session?.user?.access_token;
+    
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+    const targetUrl = `${API_BASE_URL}/api/users/addresses`;
     
     console.log('--- Address Proxy Request ---');
-    console.log('Target:', 'https://possimon.onrender.com/addresses');
-    console.log('Body:', JSON.stringify(body, null, 2));
+    console.log('Target:', targetUrl);
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     
     // Proxy the request to the external API
-    const response = await fetch('https://possimon.onrender.com/addresses', {
+    const response = await fetch(targetUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(body),
     });
 

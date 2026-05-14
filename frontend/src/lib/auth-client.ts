@@ -13,6 +13,10 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrend
 export const loginWithProvider = (provider: string) => {
   console.log(`Logging in with ${provider}...`);
   
-  // Use /login/provider for all OAuth providers (facebook, line, google)
-  window.location.href = `${API_BASE_URL}/login/${provider}`;
+  if (provider === 'google') {
+    window.location.href = `https://possimon.onrender.com/api/auth/login/google/web`;
+  } else {
+    // Use /api/auth/login/provider for other OAuth providers
+    window.location.href = `${API_BASE_URL}/api/auth/login/${provider}`;
+  }
 };

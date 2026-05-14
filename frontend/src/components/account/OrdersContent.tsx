@@ -55,7 +55,7 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                       order.status === 'pending' ? 'bg-amber-100 text-amber-700' : 
                       'bg-stone-100 text-stone-600'
                     }`}>
-                      {order.status}
+                      {t(`order.status_${order.status}`) || order.status}
                     </span>
                   </div>
                   
@@ -73,7 +73,7 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                         onClick={() => toggleOrder(order.id)}
                         className="text-xs font-bold text-stone-900 border-b-2 border-stone-900 pb-0.5 hover:text-[#a11a1a] hover:border-[#a11a1a] transition-all"
                       >
-                        {expandedOrders.includes(order.id) ? 'ซ่อนรายละเอียด' : t('order.details')}
+                        {expandedOrders.includes(order.id) ? t('order.hide_details') : t('order.details')}
                       </button>
                     </div>
                   </div>
@@ -84,27 +84,27 @@ export default function OrdersContent({ initialOrders }: OrdersContentProps) {
                   <div className="bg-stone-50 border-t border-stone-100 p-6 animate-in slide-in-from-top duration-300">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div>
-                        <h4 className="text-[10px] font-bold text-stone-900 uppercase mb-4 tracking-widest">ข้อมูลการชำระเงิน</h4>
+                        <h4 className="text-[10px] font-bold text-stone-900 uppercase mb-4 tracking-widest">{t('order.payment_info')}</h4>
                         <div className="space-y-2 text-xs">
                           <div className="flex justify-between">
-                            <span className="text-stone-500">สถานะ:</span>
-                            <span className="font-bold text-stone-900 uppercase">{order.status}</span>
+                            <span className="text-stone-500">{t('order.status')}:</span>
+                            <span className="font-bold text-stone-900 uppercase">{t(`order.status_${order.status}`) || order.status}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-stone-500">วิธีชำระเงิน:</span>
+                            <span className="text-stone-500">{t('order.payment_method')}:</span>
                             <span className="font-bold text-stone-900 uppercase">{order.payment_method}</span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-stone-500">รหัสที่อยู่:</span>
+                            <span className="text-stone-500">{t('order.address_id')}:</span>
                             <span className="font-bold text-stone-900">#{order.address_id}</span>
                           </div>
                         </div>
                       </div>
                       
                       <div>
-                        <h4 className="text-[10px] font-bold text-stone-900 uppercase mb-4 tracking-widest">รายการสินค้า</h4>
+                        <h4 className="text-[10px] font-bold text-stone-900 uppercase mb-4 tracking-widest">{t('order.items')}</h4>
                         <p className="text-[11px] text-stone-400 italic">
-                          กำลังซิงค์ข้อมูลรายละเอียดสินค้าจากระบบคลังสินค้า...
+                          {t('order.syncing_details')}
                         </p>
                       </div>
                     </div>

@@ -22,7 +22,7 @@ export default function ProfileContent({ user }: ProfileContentProps) {
             <label className="block text-[11px] font-bold text-stone-900 mb-2 uppercase tracking-wide">{t('account.member_type')} *</label>
             <input 
               type="text" 
-              value="New Register - Pending Review"
+              value={t('account.pending_review')}
               disabled
               className="w-full border border-stone-100 bg-stone-50 p-3 text-xs text-stone-400 focus:outline-none"
             />
