@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { login } from '@/app/actions/auth';
 import { loginWithProvider } from '@/lib/auth-client';
 import { AlertCircle, ArrowRight, Loader2, Mail, Lock, CheckCircle2, ShieldCheck } from 'lucide-react';
@@ -15,6 +16,7 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const { t } = useLanguage();
+  const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,45 +24,21 @@ export default function LoginForm() {
     setLoading(true);
     
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
+      const result = await login({ email, password });
       
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          username: email, // Backend expects 'username'
-          password: password,
-        }),
-      });
-
-      // If the response is redirected (Status 303 as mentioned by backend)
-      // fetch automatically follows redirects by default, so response.url will be the final URL
-      if (response.redirected) {
-        localStorage.removeItem('cart');
-        window.location.href = response.url;
+      if (result?.error) {
+        setError(result.error);
+        setLoading(false);
         return;
       }
 
-      // If not redirected, check if it's a success with token in JSON (fallback)
-      const data = await response.json().catch(() => ({}));
-      
-      if (!response.ok) {
-        setError(data.message || t('auth.error_invalid_credentials') || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
-        setLoading(false);
-      } else if (data.token) {
-        // Fallback if it didn't redirect but returned token in body
-        localStorage.removeItem('cart');
-        localStorage.setItem('access_token', data.token);
-        window.location.href = `/auth/success?token=${data.token}`;
-      } else {
-        // If it's 200 OK but no token and no redirect, it might be an unexpected state
-        console.error('Login response was OK but no redirect or token found');
-        setError(t('auth.error_unexpected'));
-        setLoading(false);
+      localStorage.removeItem('cart');
+      if (result?.token) {
+        localStorage.setItem('access_token', result.token);
       }
+
+      router.push('/account');
+      router.refresh();
     } catch (err) {
       console.error('Login error:', err);
       setError(t('auth.error_unexpected'));
@@ -80,7 +58,13 @@ export default function LoginForm() {
         <div className="relative bg-white/40 backdrop-blur-[40px] p-8 sm:p-12 w-full shadow-[0_40px_100px_-20px_rgba(0,0,0,0.12)] border border-white/60 rounded-[3rem] transition-all duration-700 hover:shadow-[0_60px_120px_-30px_rgba(0,0,0,0.18)] overflow-hidden">
           
           {/* Subtle Noise/Grain Overlay */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat"></div>
+          <div
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(41, 37, 36, 0.7) 1px, transparent 0)',
+              backgroundSize: '12px 12px',
+            }}
+          ></div>
 
           {/* Top Branding Section */}
           <div className="relative flex flex-col items-center mb-10">
@@ -157,7 +141,7 @@ export default function LoginForm() {
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="************"
                   className="w-full bg-white/50 border border-stone-200/40 pl-16 pr-6 py-5 text-stone-900 text-base rounded-[1.8rem] focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 focus:bg-white transition-all placeholder-stone-300 shadow-sm"
                   required
                   disabled={loading}

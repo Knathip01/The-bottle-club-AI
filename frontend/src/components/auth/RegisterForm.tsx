@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { register } from '@/app/actions/auth';
 import { loginWithProvider } from '@/lib/auth-client';
-import { AlertCircle, ArrowRight, Loader2, User, Mail, Phone, Lock, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, User, Mail, Phone, Lock, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
 
 export default function RegisterForm() {
@@ -45,7 +45,7 @@ export default function RegisterForm() {
         setError(result.error);
         setLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError(t('auth.error_unexpected'));
       setLoading(false);
     }
@@ -63,7 +63,13 @@ export default function RegisterForm() {
         <div className="relative bg-white/40 backdrop-blur-[40px] p-8 sm:p-12 w-full shadow-[0_40px_100px_-20px_rgba(0,0,0,0.12)] border border-white/60 rounded-[3rem] transition-all duration-700 hover:shadow-[0_60px_120px_-30px_rgba(0,0,0,0.18)] overflow-hidden">
           
           {/* Subtle Noise/Grain Overlay */}
-          <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-repeat"></div>
+          <div
+            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            style={{
+              backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(41, 37, 36, 0.7) 1px, transparent 0)',
+              backgroundSize: '12px 12px',
+            }}
+          ></div>
 
           {/* Top Branding Section */}
           <div className="relative flex flex-col items-center mb-10">

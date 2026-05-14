@@ -3,18 +3,80 @@
 import { login as setAuthSession, logout as clearAuthSession } from '@/lib/auth-utils';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { query } from '@/lib/db';
-import bcrypt from 'bcryptjs';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://possimon.onrender.com';
 
-export async function register(formData: any) {
+type LoginFormData = {
+  email?: string;
+  password?: string;
+};
+
+type RegisterFormData = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  username?: string;
+  password?: string;
+};
+
+type AuthPayload = Record<string, unknown>;
+
+function isRecord(value: unknown): value is AuthPayload {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function firstString(...values: unknown[]) {
+  return values.find((value): value is string => typeof value === 'string' && value.length > 0);
+}
+
+function getAuthToken(payload: AuthPayload) {
+  const nestedData = isRecord(payload.data) ? payload.data : {};
+  return firstString(
+    payload.access_token,
+    payload.accessToken,
+    payload.token,
+    payload.jwt,
+    nestedData.access_token,
+    nestedData.accessToken,
+    nestedData.token,
+    nestedData.jwt
+  );
+}
+
+function getApiMessage(payload: AuthPayload, fallback: string) {
+  return firstString(payload.detail, payload.message) || fallback;
+}
+
+function isRedirectError(error: unknown) {
+  return isRecord(error) && typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT');
+}
+
+function normalizeAuthSession(payload: AuthPayload, email: string) {
+  const nestedData = isRecord(payload.data) ? payload.data : {};
+  const user = isRecord(payload.user)
+    ? payload.user
+    : isRecord(nestedData.user)
+      ? nestedData.user
+      : {};
+  const token = getAuthToken(payload);
+
+  return {
+    ...payload,
+    ...nestedData,
+    ...user,
+    email: firstString(user.email, nestedData.email, payload.email, email) || email,
+    ...(token ? { access_token: token } : {}),
+  };
+}
+
+export async function register(formData: RegisterFormData) {
   const { firstName, lastName, email, phone, username, password } = formData;
 
   const effectiveUsername = username || email;
 
   if (!email || !password) {
-    return { error: 'กรุณากรอกข้อมูลให้ครบถ้วน (อีเมล และรหัสผ่าน)' };
+    return { error: 'Please fill in all required fields.' };
   }
 
   try {
@@ -33,39 +95,40 @@ export async function register(formData: any) {
       }),
     });
 
-    let data;
+    let data: AuthPayload;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+      const parsed = await response.json();
+      data = isRecord(parsed) ? parsed : {};
     } else {
       const text = await response.text();
       console.error('Register API Non-JSON Response:', text);
-      return { error: 'การลงทะเบียนไม่สำเร็จ: เซิร์ฟเวอร์ส่งการตอบกลับที่ไม่ถูกต้อง' };
+      return { error: 'Registration failed: invalid server response.' };
     }
 
     if (!response.ok) {
       if (response.status === 409) {
-        return { error: 'อีเมลนี้หรือชื่อผู้ใช้นี้ถูกใช้งานแล้ว' };
+        return { error: 'This email or username is already in use.' };
       }
-      return { error: data.detail || data.message || 'การลงทะเบียนไม่สำเร็จ กรุณาลองใหม่อีกครั้ง' };
+      return { error: getApiMessage(data, 'Registration failed. Please try again.') };
     }
 
     // After successful registration, login the user
     await setAuthSession(data);
     revalidatePath('/');
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Registration error:', error);
-    return { error: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' };
+    return { error: 'Could not contact the server. Please try again.' };
   }
 
   redirect('/account');
 }
 
-export async function login(formData: any) {
+export async function login(formData: LoginFormData) {
   const { email, password } = formData;
 
   if (!email || !password) {
-    return { error: 'กรุณากรอกอีเมลและรหัสผ่าน' };
+    return { error: 'Please enter your email and password.' };
   }
 
   try {
@@ -81,29 +144,31 @@ export async function login(formData: any) {
       }),
     });
 
-    let data;
+    let data: AuthPayload;
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+      const parsed = await response.json();
+      data = isRecord(parsed) ? parsed : {};
     } else {
       const text = await response.text();
       console.error('Login API Non-JSON Response:', text);
-      return { error: 'เข้าสู่ระบบไม่สำเร็จ: เซิร์ฟเวอร์ส่งการตอบกลับที่ไม่ถูกต้อง' };
+      return { error: 'Login failed: invalid server response.' };
     }
 
     if (!response.ok) {
-      return { error: data.detail || data.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' };
+      return { error: getApiMessage(data, 'Invalid email or password.') };
     }
 
-    await setAuthSession(data);
+    const sessionUser = normalizeAuthSession(data, email);
+    await setAuthSession(sessionUser);
     revalidatePath('/');
-  } catch (error: any) {
-    if (error.digest?.startsWith('NEXT_REDIRECT')) throw error;
+    return { success: true, token: getAuthToken(data) };
+  } catch (error: unknown) {
+    if (isRedirectError(error)) throw error;
     console.error('Login error:', error);
-    return { error: 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้ กรุณาลองใหม่อีกครั้ง' };
+    return { error: 'Could not contact the server. Please try again.' };
   }
 
-  redirect('/account');
 }
 
 export async function setSessionFromToken(token: string) {
